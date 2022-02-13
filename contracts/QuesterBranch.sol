@@ -7,7 +7,6 @@ interface IQuesterMain {
     function accrueForMiningHeroes(uint256[] calldata _heroes) external;
     function requestLocked() external;
     function bot() external view returns (address);
-    //function questSelectors(bytes4 sel) external view returns (uint256);
 }
 
 struct Quest {
@@ -40,12 +39,11 @@ contract QuesterBranch {
     address private constant dfkFactory = 0x9014B937069918bd319f80e8B3BB4A2cf6FAA5F7;
     address private constant dfkGarden = 0xDB30643c71aC9e2122cA0341ED77d09D5f99F924;
     address private constant jewelMiningAddr = 0x6FF019415Ee105aCF2Ac52483A33F5B43eaDB8d0;
+    address private constant airdrop = 0x8AbEbcDBF5AF9FC602814Eabf6Fbf952acF682A2;
     
     address public questerMain;
     address public bot;
     uint256 public lockedJewelThreshold;
-    
-    //mapping(bytes4 => uint256) private _selectors;
     
     bool private initialized;
     
@@ -57,7 +55,7 @@ contract QuesterBranch {
         
         questerMain = msg.sender;
         bot = IQuesterMain(questerMain).bot();
-        lockedJewelThreshold = 19*1000*1e18;  // 19k locked
+        lockedJewelThreshold = 9*1000*1e18;  // 9k locked
         
         // profile
         require(IProfiles(profiles).createProfile(_name, 1), "Profile creation failed");
@@ -81,11 +79,6 @@ contract QuesterBranch {
         bot = IQuesterMain(questerMain).bot();
     }
     
-    /// @notice Refresh selectors validity
-    //function setSelector(bytes4 sel) external {
-    //    _selectors[sel] = IQuesterMain(questerMain).questSelectors(sel);
-    //}
-    
     /*******************/
     /* Bot Functions   */
     /*******************/
@@ -94,6 +87,13 @@ contract QuesterBranch {
     /// @param _newValue New threshold value
     function setLockedJewelThreshold(uint256 _newValue) external onlyBot {
         lockedJewelThreshold = _newValue;
+    }
+    
+    /// @notice Interact with airdrop contract
+    /// @param _data Calldata to pass
+    function checkAirdrop(bytes calldata _data) external onlyBot {
+        (bool success, ) = airdrop.call(_data);
+        require(success, "airdrop call failed");
     }
     
     // ---------
@@ -270,7 +270,7 @@ contract QuesterBranch {
     }
     
     // get poolId from LP-token address
-    function _getPoolId(address lpToken) internal view returns(uint256) {        
+    function _getPoolId(address lpToken) internal view returns(uint256) {
         uint256 poolId = IMasterGardener(dfkGarden).poolId1(lpToken);
         require(poolId > 0, "wrong LP-token");
         poolId -= 1; // this is the way

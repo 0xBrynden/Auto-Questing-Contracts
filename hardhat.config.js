@@ -5,6 +5,7 @@
 require('@nomiclabs/hardhat-waffle')
 require('hardhat-gas-reporter');
 require('solidity-coverage');
+require("@nomiclabs/hardhat-etherscan");
 require('dotenv').config();
  
 module.exports = {
@@ -35,10 +36,16 @@ module.exports = {
       chainId: 1337,
       blockGasLimit: 80_000_000
     },
-    //mainnet: {
-    //  url: process.env.INFURA_URL,
-    //  accounts: [`0x${process.env.PRIVATE_KEY}`]
-    //}
+    harmony: {
+      // url: "https://api.s0.t.hmny.io",
+      url: "https://harmony-0-rpc.gateway.pokt.network",
+      accounts: [process.env.PRIVATE_KEY_DEPLOYER]
+    },
+  },
+  etherscan: {
+    apiKey: {
+      harmony: 'your API key'
+    }
   },
   gasReporter: {
     enabled: false,
